@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oap-ui
+  namespace: dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oap-ui
+  template:
+    metadata:
+      labels:
+        app: oap-ui
+    spec:
+#      nodeSelector:
+#        key: value
+      containers:
+      - name: oap-ui
+        image: apache/skywalking-ui:8.6.0
+        resources:
+          requests:
+            memory: "250Mi"
+            cpu: "100m"
+          limits:
+            memory: "500Mi"
+            cpu: "500m"
+        env: 
+          - name: SW_OAP_ADDRESS
+            value: oap-server:12800
+
+
+        ports:
+        - containerPort: 8080
+             
+  
+      

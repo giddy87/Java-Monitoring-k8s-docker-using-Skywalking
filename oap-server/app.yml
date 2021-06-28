@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oap-server
+  namespace: dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oap-server
+  template:
+    metadata:
+      labels:
+        app: oap-server
+    spec:
+
+#      nodeSelector:
+#        key: value
+      containers:
+      - name: oap-server
+        image: apache/skywalking-oap-server:8.6.0-es7
+        resources:
+          requests:
+            memory: "250Mi"
+            cpu: "100m"
+          limits:
+            memory: "1000Mi"
+            cpu: "500m"
+        env: 
+          - name: SW_STORAGE
+            value: postgresql
+          - name: SW_HEALTH_CHECKER 
+            value: default
+          - name: SW_TELEMETRY 
+            value: prometheus
+          - name: SW_CLUSTER
+            value: standalone
+          - name: USER
+            valueFrom:
+              secretKeyRef:
+                name: oapsecret
+                key: user
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: oapsecret
+                key: postgres_password
+          - name: PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: oapsecret
+                key: password
+          - name: DATABASE
+            valueFrom:
+              secretKeyRef:
+                name: oapsecret
+                key: database
+
+        livenessProbe:
+            exec:
+              command:                                       
+                - ./bin/swctl
+                - ch
+            failureThreshold: 3
+            initialDelaySeconds: 40
+            periodSeconds: 30
+            timeoutSeconds: 10
+
+        ports:
+        - containerPort: 1234
+        - containerPort: 11800
+        - containerPort: 12800
+        volumeMounts:
+        - name: db-config
+          mountPath: skywalking/config/application.yml
+          subPath: application.yml
+             
+      imagePullSecrets:
+      - name: regcred
+      volumes:
+      - name: cache-volume
+        emptyDir: {}
+      - name : db-config
+        configMap:
+          name: oap-postgres
+      

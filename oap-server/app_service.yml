@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: oap-server
+  namespace: dev
+  labels:
+    app: oap-server
+spec:
+  type: ClusterIP
+  ports:
+  - port: 11800
+    name: port1
+    protocol: TCP
+    targetPort: 11800
+  - port: 12800
+    name: port2
+    protocol: TCP
+    targetPort: 12800
+  - port: 1234
+    name: port3
+    protocol: TCP
+    targetPort: 1234
+  selector:
+    app: oap-server
+
